@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Casa Azul</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#050B14;
+    --black:#0A0A0A;
+    --blue:#1E6BFF;
+    --blue-glow:#3FA9FF;
+    --red:#FF1E3C;
+    --white:#EDF2FB;
+    --grey:#8A94A6;
+    --radius: 4px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{ scroll-behavior:smooth; }
+  body{
+    background:
+      linear-gradient(180deg, var(--navy) 0%, var(--black) 100%);
+    color: var(--white);
+    font-family:'Oswald', sans-serif;
+    overflow-x:hidden;
+  }
+  ::selection{ background: var(--blue); color:var(--black); }
+  a{ color:inherit; text-decoration:none; }
+
+  .grain{
+    position:fixed; inset:0; pointer-events:none; z-index:1; opacity:.06; mix-blend-mode:overlay;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .scan{
+    position:fixed; inset:0; pointer-events:none; z-index:1; opacity:.04;
+    background: repeating-linear-gradient(180deg, #fff 0px, #fff 1px, transparent 1px, transparent 3px);
+  }
+
+  h1,h2,h3,.display{
+    font-family:'Anton', sans-serif;
+    text-transform:uppercase;
+    letter-spacing:1px;
+  }
+  .eyebrow{
+    font-family:'Space Mono', monospace;
+    font-size:.72rem; letter-spacing:4px; text-transform:uppercase;
+    color: var(--blue-glow);
+    display:flex; align-items:center; gap:12px;
+  }
+  .eyebrow::before{ content:""; width:26px; height:2px; background: var(--red); }
+
+  section{ position:relative; z-index:2; padding: 110px 8vw; }
+  .btn{
+    display:inline-flex; align-items:center; gap:10px;
+    padding:16px 32px; font-family:'Oswald'; font-weight:600; font-size:.92rem;
+    letter-spacing:1px; text-transform:uppercase; border-radius: var(--radius);
+    border:1px solid transparent; cursor:pointer; transition:.25s;
+  }
+  .btn-primary{
+    background: var(--blue); color:#fff;
+    box-shadow: 0 0 0 1px rgba(63,169,255,.3), 0 12px 30px rgba(30,107,255,.35);
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  }
+  .btn-primary:hover{ background: var(--blue-glow); transform: translateY(-2px); }
+  .btn-ghost{
+    border-color: rgba(237,242,251,.3); color: var(--white);
+    clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+  }
+  .btn-ghost:hover{ border-color: var(--red); color: var(--red); }
+
+  /* NAV */
+  nav{
+    position:fixed; top:0; left:0; right:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 20px 8vw;
+    background: rgba(5,11,20,.7); backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(63,169,255,.15);
+  }
+  .logo{ font-family:'Anton'; font-size:1.5rem; letter-spacing:2px; }
+  .logo span{ color: var(--blue-glow); }
+  .navlinks{ display:flex; gap:34px; font-size:.85rem; text-transform:uppercase; letter-spacing:1px; }
+  .navlinks a{ opacity:.75; transition:.25s; }
+  .navlinks a:hover{ opacity:1; color: var(--blue-glow); }
+  .wa-nav{
+    display:flex; align-items:center; gap:8px; padding:10px 18px;
+    background: rgba(30,107,255,.12); border:1px solid var(--blue);
+    border-radius: var(--radius); font-size:.8rem; font-family:'Space Mono';
+  }
+  .wa-nav:hover{ background: var(--blue); }
+
+  /* HERO */
+  .hero{
+    min-height:100vh; display:flex; flex-direction:column; justify-content:center;
+    padding: 140px 8vw 60px;
+    position:relative; overflow:hidden;
+    background: var(--black);
+  }
+  .hero-media{
+    position:absolute; inset:0; z-index:0;
+  }
+  .hero-media video,
+  .hero-media img{
+    width:100%; height:100%; object-fit:cover; object-position:center 30%;
+    filter: saturate(1.15) contrast(1.05);
+  }
+  /* Fallback ambient background — used while no real photo/video is set */
+  .hero-media.no-media{
+    background: var(--black);
+  }
+  .hero-media.no-media .beam{
+    position:absolute; border-radius:50%; filter: blur(90px); opacity:.55;
+    animation: drift 14s ease-in-out infinite;
+  }
+  .hero-media.no-media .beam.b1{ width:46vw; height:46vw; top:-12%; right:-8%; background: radial-gradient(circle, rgba(30,107,255,.55), transparent 70%); }
+  .hero-media.no-media .beam.b2{ width:38vw; height:38vw; bottom:-14%; left:-6%; background: radial-gradient(circle, rgba(255,30,60,.35), transparent 70%); animation-delay:-6s; }
+  .hero-media.no-media .beam.b3{ width:30vw; height:30vw; top:30%; left:35%; background: radial-gradient(circle, rgba(63,169,255,.3), transparent 70%); animation-delay:-3s; }
+  @keyframes drift{
+    0%,100%{ transform: translate(0,0) scale(1); }
+    50%{ transform: translate(3%, -4%) scale(1.08); }
+  }
+  .hero-media .ph-tag{
+    position:absolute; bottom:18px; right:18px; z-index:2;
+    font-family:'Space Mono'; font-size:.62rem; letter-spacing:1px; color: var(--grey);
+    border:1px dashed rgba(255,255,255,.25); padding:5px 10px; background: rgba(0,0,0,.4);
+  }
+  .hero-overlay{
+    position:absolute; inset:0; z-index:1;
+    background:
+      linear-gradient(90deg, rgba(5,11,20,.96) 0%, rgba(5,11,20,.75) 32%, rgba(5,11,20,.25) 60%, rgba(5,11,20,.55) 100%),
+      linear-gradient(0deg, rgba(5,11,20,.98) 0%, rgba(5,11,20,.2) 40%, rgba(5,11,20,.15) 70%, rgba(5,11,20,.9) 100%);
+  }
+  .hero > div, .hero > .stripe{ position:relative; z-index:2; }
+  .hero::after{
+    content:""; position:absolute; left:8vw; right:8vw; bottom:60px; height:1px;
+    background: linear-gradient(90deg, transparent, var(--blue), transparent);
+  }
+  .hero h1{
+    font-size: clamp(3.4rem, 8vw, 7rem); line-height:.92; margin: 18px 0 24px;
+  }
+  .hero h1 .glow{ color: var(--blue-glow); text-shadow: 0 0 40px rgba(63,169,255,.6); }
+  .hero p.sub{ font-size:1.1rem; color: var(--grey); max-width:520px; font-weight:300; line-height:1.6; }
+  .cta-row{ display:flex; gap:16px; margin-top:40px; flex-wrap:wrap; }
+
+  .stripe{
+    display:flex; gap:0; margin-top:70px; border-top:1px solid rgba(255,255,255,.1); overflow:hidden;
+  }
+  .stripe span{
+    font-family:'Space Mono'; font-size:.95rem; white-space:nowrap; opacity:.4;
+    padding:14px 30px; border-right:1px solid rgba(255,255,255,.1);
+    animation: marquee 22s linear infinite;
+  }
+  @keyframes marquee{ from{transform:translateX(0);} to{transform:translateX(-50%);} }
+
+  /* EVENTS */
+  .section-head{ max-width:640px; margin-bottom:56px; }
+  .section-head h2{ font-size: clamp(2.2rem,4.5vw,3.6rem); margin-top:14px; }
+  .section-head p{ color: var(--grey); margin-top:14px; font-weight:300; }
+
+  .events{ display:grid; grid-template-columns: repeat(3,1fr); gap:2px; background: rgba(255,255,255,.08); }
+  .ecard{
+    background: var(--black); padding:34px 26px; position:relative; overflow:hidden;
+    border-top:2px solid transparent; transition:.3s;
+  }
+  .ecard:hover{ border-top-color: var(--blue); background:#0d1420; }
+  .ecard .num{ font-family:'Space Mono'; color: var(--red); font-size:.8rem; }
+  .ecard h3{ font-size:1.5rem; margin:16px 0 10px; }
+  .ecard p{ color: var(--grey); font-size:.88rem; font-weight:300; line-height:1.6; margin-bottom:22px; }
+  .ecard .btn{ font-size:.75rem; padding:12px 20px; width:100%; justify-content:center; }
+
+  /* CANDY */
+  #dulces{ background: linear-gradient(180deg, transparent, rgba(30,107,255,.05)); }
+  .products{ display:grid; grid-template-columns: repeat(3,1fr); gap:22px; margin-top:50px; }
+  .pcard{
+    background: #0A121F; border:1px solid rgba(255,255,255,.08);
+    padding:0; overflow:hidden; transition:.3s;
+    clip-path: polygon(0 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%);
+  }
+  .pcard:hover{ border-color: var(--blue); transform: translateY(-4px); }
+  .pcard .thumb{
+    aspect-ratio: 4/3; display:flex; align-items:center; justify-content:center;
+    background: linear-gradient(145deg, #0A121F, #050B14);
+    font-size:2.8rem; position:relative;
+  }
+  .pcard .thumb .ph{
+    position:absolute; top:10px; left:10px; font-family:'Space Mono'; font-size:.6rem;
+    color: var(--grey); border:1px dashed rgba(255,255,255,.25); padding:3px 8px; letter-spacing:1px;
+  }
+  .pcard .body{ padding:22px; }
+  .pcard h3{ font-size:1.1rem; margin-bottom:6px; }
+  .pcard p{ color: var(--grey); font-size:.82rem; font-weight:300; margin-bottom:18px; min-height:40px; }
+  .pcard .row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .pcard .price{ font-family:'Anton'; color: var(--blue-glow); font-size:1.3rem; }
+  .pcard .btn{ font-size:.72rem; padding:10px 16px; }
+
+  /* WHATSAPP FLOAT */
+  .wa-float{
+    position:fixed; bottom:26px; right:26px; z-index:60;
+    display:flex; align-items:center; gap:10px;
+    background: #128C4A; color:#fff; padding:15px 22px;
+    border-radius: 999px; font-family:'Oswald'; font-weight:600; font-size:.85rem;
+    box-shadow: 0 10px 30px rgba(18,140,74,.45);
+    transition:.25s;
+  }
+  .wa-float:hover{ transform: translateY(-3px) scale(1.03); }
+
+  footer{
+    padding: 60px 8vw 40px; text-align:center; border-top:1px solid rgba(255,255,255,.08);
+    font-size:.8rem; color: var(--grey);
+  }
+  footer .fb{ font-family:'Anton'; font-size:1.4rem; color: var(--white); margin-bottom:10px; letter-spacing:2px; }
+
+  /* GATE */
+  #gate{
+    position:fixed; inset:0; z-index:999; background: var(--black);
+    display:flex; align-items:center; justify-content:center; padding:24px;
+  }
+  #gate::before{
+    content:""; position:absolute; inset:0;
+    background: radial-gradient(circle at 50% 30%, rgba(30,107,255,.25), transparent 55%);
+  }
+  .gate-card{
+    position:relative; z-index:2; width:100%; max-width:380px;
+    background: rgba(255,255,255,.03); border:1px solid rgba(63,169,255,.25);
+    padding: 46px 34px; text-align:center;
+    clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
+  }
+  .gate-card .logo{ font-size:2rem; display:block; margin-bottom:8px; }
+  .gate-card p{ font-size:.75rem; color: var(--grey); margin-bottom:26px; font-family:'Space Mono'; letter-spacing:2px; text-transform:uppercase; }
+  .gate-card input{
+    width:100%; padding:15px 18px; margin-bottom:14px;
+    background: rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.2);
+    color: var(--white); font-family:'Space Mono'; font-size:.95rem; text-align:center; letter-spacing:2px;
+  }
+  .gate-card input:focus{ outline:2px solid var(--blue); border-color:transparent; }
+  .gate-card .btn{ width:100%; justify-content:center; }
+  .gate-error{ color: var(--red); font-size:.75rem; margin-top:12px; height:16px; font-family:'Space Mono'; }
+  body.unlocked #gate{ display:none; }
+  body:not(.unlocked) > *:not(#gate){ display:none; }
+
+  @media(max-width: 880px){
+    .events, .products{ grid-template-columns:1fr; }
+    .navlinks{ display:none; }
+    section{ padding:80px 6vw; }
+  }
+</style>
+</head>
+<body>
+
+<div id="gate">
+  <div class="gate-card">
+    <span class="logo">CASA <span style="color:var(--blue-glow)">AZUL</span></span>
+    <p>Acceso restringido</p>
+    <input type="password" id="gateInput" placeholder="Clave de acceso" autocomplete="off">
+    <button class="btn btn-primary" id="gateBtn" style="border:none; cursor:pointer;">Entrar</button>
+    <div class="gate-error" id="gateError"></div>
+  </div>
+</div>
+
+<div class="grain"></div>
+<div class="scan"></div>
+
+<nav>
+  <div class="logo">CASA <span>AZUL</span></div>
+  <div class="navlinks">
+    <a href="#eventos">Eventos</a>
+    <a href="#dulces">Dulces</a>
+    <a href="#contacto">Contacto</a>
+  </div>
+  <a class="wa-nav" id="waNav" target="_blank" rel="noopener">📲 Preventas</a>
+</nav>
+
+<header class="hero">
+  <!--
+    Para poner tu foto o video real de la discoteca:
+    - VIDEO: agrega el src al <source> de #heroVideo (mp4, corto, sin audio necesario).
+    - FOTO: agrega el src al <img id="heroPhoto"> y borra o comenta el <video>.
+    En ambos casos, borra la clase "no-media" de #heroMedia para que se apague el fondo ambiental.
+  -->
+  <div class="hero-media no-media" id="heroMedia">
+    <video id="heroVideo" autoplay muted loop playsinline poster="">
+      <source src="" type="video/mp4">
+    </video>
+    <img id="heroPhoto" src="" alt="Casa Azul — ambiente" style="display:none;">
+    <div class="beam b1"></div>
+    <div class="beam b2"></div>
+    <div class="beam b3"></div>
+    <span class="ph-tag">FOTO / VIDEO PRÓXIMAMENTE</span>
+  </div>
+  <div class="hero-overlay"></div>
+  <div>
+    <p class="eyebrow">Eventos privados</p>
+    <h1>CASA <span class="glow">AZUL</span></h1>
+    <p class="sub">Fiestas privadas, acceso controlado, experiencia sin límites. Aquí las reglas las pone la casa.</p>
+    <div class="cta-row">
+      <a href="#eventos" class="btn btn-primary">Ver eventos</a>
+      <a id="waHero" target="_blank" rel="noopener" class="btn btn-ghost">Agendar preventa 📲</a>
+    </div>
+  </div>
+  <div class="stripe">
+    <span>ACCESO PRIVADO · CASA AZUL · SOLO INVITADOS · CASA AZUL · ACCESO PRIVADO · CASA AZUL · SOLO INVITADOS · CASA AZUL · </span>
+    <span>ACCESO PRIVADO · CASA AZUL · SOLO INVITADOS · CASA AZUL · ACCESO PRIVADO · CASA AZUL · SOLO INVITADOS · CASA AZUL · </span>
+  </div>
+</header>
+
+<section id="eventos">
+  <div class="section-head">
+    <p class="eyebrow">Próximos eventos</p>
+    <h2>Fiestas privadas</h2>
+    <p>Cupo limitado. Confirmación por WhatsApp.</p>
+  </div>
+  <div class="events">
+    <div class="ecard">
+      <div class="num">EVENTO / 01</div>
+      <h3>Noche Azul</h3>
+      <p>Fiesta privada de temporada. Ubicación confirmada tras el registro.</p>
+      <a id="waE1" target="_blank" rel="noopener" class="btn btn-primary">Agendar preventa</a>
+    </div>
+    <div class="ecard">
+      <div class="num">EVENTO / 02</div>
+      <h3>Casa Cerrada</h3>
+      <p>Evento exclusivo por invitación. Cupos reducidos.</p>
+      <a id="waE2" target="_blank" rel="noopener" class="btn btn-primary">Agendar preventa</a>
+    </div>
+    <div class="ecard">
+      <div class="num">EVENTO / 03</div>
+      <h3>Edición Especial</h3>
+      <p>Próxima fecha por confirmar. Reserva tu lugar con anticipación.</p>
+      <a id="waE3" target="_blank" rel="noopener" class="btn btn-primary">Agendar preventa</a>
+    </div>
+  </div>
+</section>
+
+<section id="dulces">
+  <div class="section-head">
+    <p class="eyebrow">Tienda</p>
+    <h2>Dulces Casa Azul</h2>
+    <p>Pedidos y coordinación de entrega por WhatsApp.</p>
+  </div>
+  <div class="products">
+    <div class="pcard">
+      <div class="thumb"><span class="ph">FOTO PRÓXIMAMENTE</span>🍬</div>
+      <div class="body">
+        <h3>Quipitos Fresa &amp; Mora</h3>
+        <p>Gomitas de fresa y mora, pack combinado.</p>
+        <div class="row">
+          <span class="price">$—</span>
+          <a id="waP1" target="_blank" rel="noopener" class="btn btn-primary">Comprar</a>
+        </div>
+      </div>
+    </div>
+    <div class="pcard">
+      <div class="thumb"><span class="ph">FOTO PRÓXIMAMENTE</span>🌿</div>
+      <div class="body">
+        <h3>Chicles Hierbabuena</h3>
+        <p>Chicles comestibles sabor hierbabuena, estilo Xtime.</p>
+        <div class="row">
+          <span class="price">$—</span>
+          <a id="waP2" target="_blank" rel="noopener" class="btn btn-primary">Comprar</a>
+        </div>
+      </div>
+    </div>
+    <div class="pcard">
+      <div class="thumb"><span class="ph">FOTO PRÓXIMAMENTE</span>🍫</div>
+      <div class="body">
+        <h3>Pack Todo en Uno</h3>
+        <p>Chocolates, leche condensada y pepitas de colores.</p>
+        <div class="row">
+          <span class="price">$—</span>
+          <a id="waP3" target="_blank" rel="noopener" class="btn btn-primary">Comprar</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contacto">
+  <div class="section-head">
+    <p class="eyebrow">Contacto</p>
+    <h2>Habla con nosotros</h2>
+  </div>
+  <p class="sub" style="color:var(--grey)">Preventas de eventos y pedidos de dulces, todo por WhatsApp.</p>
+  <div class="cta-row">
+    <a id="waContact" target="_blank" rel="noopener" class="btn btn-primary">Escribir por WhatsApp</a>
+  </div>
+</section>
+
+<a class="wa-float" id="waFloat" target="_blank" rel="noopener">💬 WhatsApp</a>
+
+<footer>
+  <div class="fb">CASA AZUL</div>
+  <p>© 2026 Casa Azul. Acceso solo para invitados registrados.</p>
+</footer>
+
+<script>
+  const PASSWORD = "CasaAzulMoneyWay777";
+  const gateInput = document.getElementById('gateInput');
+  const gateBtn = document.getElementById('gateBtn');
+  const gateError = document.getElementById('gateError');
+
+  function tryUnlock(){
+    if(gateInput.value === PASSWORD){
+      document.body.classList.add('unlocked');
+      sessionStorage.setItem('ca_unlocked', '1');
+    } else {
+      gateError.textContent = 'Clave incorrecta';
+      gateInput.value = '';
+      gateInput.focus();
+    }
+  }
+  gateBtn.addEventListener('click', tryUnlock);
+  gateInput.addEventListener('keydown', e => { if(e.key === 'Enter') tryUnlock(); });
+  if(sessionStorage.getItem('ca_unlocked') === '1'){
+    document.body.classList.add('unlocked');
+  }
+
+  // Hero media: switch off the ambient fallback once a real video/photo src is set
+  const heroMedia = document.getElementById('heroMedia');
+  const heroVideo = document.getElementById('heroVideo');
+  const heroPhoto = document.getElementById('heroPhoto');
+  const videoSrc = heroVideo.querySelector('source').getAttribute('src');
+  const photoSrc = heroPhoto.getAttribute('src');
+  if(videoSrc){
+    heroMedia.classList.remove('no-media');
+    heroPhoto.style.display = 'none';
+  } else if(photoSrc){
+    heroMedia.classList.remove('no-media');
+    heroVideo.style.display = 'none';
+    heroPhoto.style.display = 'block';
+  } else {
+    heroVideo.style.display = 'none';
+    heroPhoto.style.display = 'none';
+  }
+
+  // WhatsApp redirection — single number, reusable across CTAs
+  const WA_NUMBER = "573103676834";
+  function waLink(msg){
+    return `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
+  }
+  const waMap = {
+    waNav: "Hola, quiero información sobre las preventas de eventos Casa Azul.",
+    waHero: "Hola, quiero agendar una preventa para un evento de Casa Azul.",
+    waE1: "Hola, quiero agendar mi cupo para el evento Noche Azul.",
+    waE2: "Hola, quiero agendar mi cupo para el evento Casa Cerrada.",
+    waE3: "Hola, quiero información sobre la Edición Especial.",
+    waP1: "Hola, quiero pedir Quipitos Fresa & Mora.",
+    waP2: "Hola, quiero pedir Chicles Hierbabuena.",
+    waP3: "Hola, quiero pedir el Pack Todo en Uno.",
+    waContact: "Hola, quiero más información de Casa Azul.",
+    waFloat: "Hola, quiero más información de Casa Azul."
+  };
+  Object.entries(waMap).forEach(([id, msg]) => {
+    const el = document.getElementById(id);
+    if(el) el.href = waLink(msg);
+  });
+</script>
+
+</body>
+</html>
